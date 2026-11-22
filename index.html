@@ -275,6 +275,7 @@ body.secret-mode .topbar{display:none!important}
 #caos-secreto.lantern-on .chaos-card,#caos-secreto.lantern-on .chaos-art,#caos-secreto.lantern-on .puzzle{transition:border-color .3s}
 @media(max-width:760px){#caos-secreto .chaos-gallery{grid-template-columns:1fr}.chaos-art{height:190px}}
 @media(prefers-reduced-motion:reduce){#butterfly-cursor{transition:none}}
+#page-fracture.static .fracture-message{animation:none!important;opacity:1}#page-fracture.static .fracture-flash{display:none}
 </style>
 </head>
 <body>
@@ -648,19 +649,19 @@ document.querySelectorAll('.object-card').forEach(card=>{
     }catch(e){}
   }
   function fire(){
-    if(played||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(played)return;
     played=true;playGlassBreak();
     const overlay=document.getElementById('page-fracture');
     if(!overlay)return;
-    document.body.classList.add('page-fracture');overlay.classList.add('active');
+    overlay.classList.toggle('static',matchMedia('(prefers-reduced-motion: reduce)').matches);document.body.classList.add('page-fracture');overlay.classList.add('active');
     clearTimeout(timer);
     timer=setTimeout(()=>{overlay.classList.remove('active');document.body.classList.remove('page-fracture')},2350);
   }
   function findFallParagraph(){
-    if(played)return;
     const paragraphs=[...document.querySelectorAll('#chapterText p')];
-    const target=paragraphs.find(p=>/Lia caiu na água|Lia caiu no Rio Seda/i.test(p.textContent));
-    if(!target)return;
+    const target=paragraphs.find(p=>/Lia caiu na água junto|Lia caiu no Rio Seda/i.test(p.textContent));
+    if(!target){played=false;if(observer)observer.disconnect();return;}
+    if(played)return;
     if(observer)observer.disconnect();
     observer=new IntersectionObserver(entries=>{
       for(const entry of entries){
@@ -677,7 +678,7 @@ document.querySelectorAll('.object-card').forEach(card=>{
   }
   const chapter=document.getElementById('chapterText');
   if(chapter){
-    new MutationObserver(()=>{if(!played)setTimeout(findFallParagraph,80)}).observe(chapter,{childList:true,subtree:true});
+    new MutationObserver(()=>{setTimeout(findFallParagraph,80)}).observe(chapter,{childList:true,subtree:true});
     setTimeout(findFallParagraph,250);
   }
 })();
